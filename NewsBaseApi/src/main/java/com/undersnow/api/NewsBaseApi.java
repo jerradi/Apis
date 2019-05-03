@@ -8,8 +8,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,13 +41,21 @@ class PublicController {
 
 	@Autowired
 	private ItemRepository repo;
-
+	private static long counter = -1;
 	private static Set<Item> Items = new HashSet<>();
 
 	@GetMapping("addedItems")
 	public Set<Item> getItem() {
 		Set<Item> mySet = new HashSet<>();
 		repo.findAll().forEach(x -> mySet.add(x));
+		return mySet;
+	}
+	
+	
+	@GetMapping("since/{id}")
+	public Set<Item> getItemSince(@PathVariable("id") Long id) {
+		Set<Item> mySet = new HashSet<>();
+		repo.findSince(id).forEach(x -> mySet.add(x));
 		return mySet;
 	}
 
@@ -56,14 +66,15 @@ class PublicController {
 			repo.deleteAll();
 			return true;
 		} catch (Exception e) {
-
 		}
-
 		return false;
 	}
 
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, value = "add")
-	public void addItem(@RequestBody Item Item) {
-		repo.save(Item);
+	public void addItem(@RequestBody  @DateTimeFormat(pattern = "dd-MM-yyyy") Item item) {
+		
+		item.setDbId( (counter>0?counter:(counter=(int)repo.count())));
+		repo.save(item);
+		counter++;
 	}
 }
