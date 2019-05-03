@@ -42,8 +42,6 @@ class PublicController {
 	@Autowired
 	private ItemRepository repo;
 	private static long counter = -1;
-	private static Set<Item> Items = new HashSet<>();
-
 	@GetMapping("addedItems")
 	public Set<Item> getItem() {
 		Set<Item> mySet = new HashSet<>();
@@ -61,7 +59,6 @@ class PublicController {
 
 	@GetMapping("del")
 	public Boolean delAll() {
-		Set<Item> mySet = new HashSet<>();
 		try {
 			repo.deleteAll();
 			return true;
